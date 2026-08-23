@@ -4,6 +4,13 @@ require("dotenv").config();
 
 const authRoutes = require("./routes/authRoutes");
 
+const userRoutes = require("./routes/userRoutes");
+const plantRoutes = require("./routes/plantRoutes");
+const journalRoutes = require("./routes/journalRoutes");
+const diseaseRoutes = require("./routes/diseaseRoutes");
+const reminderRoutes = require("./routes/reminderRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+
 const app = express();
 
 app.use(cors());
@@ -14,6 +21,13 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+
+app.use("/api/users", userRoutes);
+app.use("/api/plants", plantRoutes);
+app.use("/api/journal", journalRoutes);
+app.use("/api/disease", diseaseRoutes);
+app.use("/api/reminders", reminderRoutes);
+app.use("/api/admin", adminRoutes);
 
 const PORT = process.env.PORT || 5000;
 
