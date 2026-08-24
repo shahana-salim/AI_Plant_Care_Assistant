@@ -29,6 +29,10 @@ app.use("/api/disease", diseaseRoutes);
 app.use("/api/reminders", reminderRoutes);
 app.use("/api/admin", adminRoutes);
 
+const connectDB = require("./config/db");
+
+connectDB();
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
