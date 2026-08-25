@@ -1,9 +1,13 @@
 const express = require("express");
+const { protect } = require("../middleware/authMiddleware");
+const { createPlant, getPlants, getPlantById, updatePlant, deletePlant} = require("../controllers/plantController");
 
 const router = express.Router();
 
-router.get("/test", (req, res) => {
-    res.json({ message: "Plant route is working" });
-});
+router.post("/", protect, createPlant);
+router.get("/", protect, getPlants);
+router.get("/:id", protect, getPlantById);
+router.put("/:id", protect, updatePlant);
+router.delete("/:id", protect, deletePlant);
 
 module.exports = router;
