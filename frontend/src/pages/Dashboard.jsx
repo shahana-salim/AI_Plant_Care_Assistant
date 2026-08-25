@@ -123,6 +123,20 @@ function Dashboard() {
                             Analyze plant health and diseases.
                         </p>
                     </button>
+                    <button
+                        onClick={() => navigate("/reminders")}
+                        className="bg-white p-6 rounded-2xl shadow hover:shadow-lg transition text-left"
+                    >
+                        <div className="text-3xl mb-3">⏰</div>
+
+                        <h3 className="text-xl font-semibold text-gray-800">
+                            Reminders
+                        </h3>
+
+                        <p className="text-gray-500 mt-1">
+                            Manage your plant care reminders.
+                        </p>
+                    </button>
 
                 </div>
 

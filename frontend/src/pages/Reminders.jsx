@@ -3,15 +3,16 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 
-function Journal() {
-    const [entries, setEntries] = useState([]);
+function Reminders() {
+    const [reminders, setReminders] = useState([]);
     const [plants, setPlants] = useState([]);
 
     const [plantId, setPlantId] = useState("");
-    const [title, setTitle] = useState("");
-    const [content, setContent] = useState("");
+    const [type, setType] = useState("watering");
+    const [date, setDate] = useState("");
 
     const [editingId, setEditingId] = useState(null);
+    const [status, setStatus] = useState("pending");
     const [error, setError] = useState("");
 
     const navigate = useNavigate();
@@ -19,8 +20,8 @@ function Journal() {
 
     const fetchData = async () => {
         try {
-            const [journalResponse, plantResponse] = await Promise.all([
-                axios.get("http://localhost:5000/api/journal", {
+            const [reminderResponse, plantResponse] = await Promise.all([
+                axios.get("http://localhost:5000/api/reminders", {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -32,12 +33,12 @@ function Journal() {
                 })
             ]);
 
-            setEntries(journalResponse.data.entries);
+            setReminders(reminderResponse.data.reminders);
             setPlants(plantResponse.data.plants);
         } catch (error) {
             setError(
                 error.response?.data?.message ||
-                "Failed to load journal data."
+                "Failed to load reminders."
             );
         }
     };
@@ -58,10 +59,11 @@ function Journal() {
         try {
             if (editingId) {
                 await axios.put(
-                    `http://localhost:5000/api/journal/${editingId}`,
+                    `http://localhost:5000/api/reminders/${editingId}`,
                     {
-                        title,
-                        content
+                        type,
+                        date,
+                        status
                     },
                     {
                         headers: {
@@ -71,11 +73,11 @@ function Journal() {
                 );
             } else {
                 await axios.post(
-                    "http://localhost:5000/api/journal",
+                    "http://localhost:5000/api/reminders",
                     {
                         plantId,
-                        title,
-                        content
+                        type,
+                        date
                     },
                     {
                         headers: {
@@ -85,35 +87,43 @@ function Journal() {
                 );
             }
 
-            setPlantId("");
-            setTitle("");
-            setContent("");
-            setEditingId(null);
-
+            resetForm();
             fetchData();
         } catch (error) {
             setError(
                 error.response?.data?.message ||
-                "Failed to save journal entry."
+                "Failed to save reminder."
             );
         }
     };
 
-    const handleEdit = (entry) => {
-        setEditingId(entry._id);
-        setTitle(entry.title);
-        setContent(entry.content);
-        setPlantId(entry.plantId?._id || entry.plantId);
+    const resetForm = () => {
+        setPlantId("");
+        setType("watering");
+        setDate("");
+        setStatus("pending");
+        setEditingId(null);
+    };
+
+    const handleEdit = (reminder) => {
+        setEditingId(reminder._id);
+        setType(reminder.type);
+        setDate(
+            reminder.date
+                ? new Date(reminder.date).toISOString().slice(0, 16)
+                : ""
+        );
+        setStatus(reminder.status || "pending");
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm("Delete this journal entry?")) {
+        if (!window.confirm("Delete this reminder?")) {
             return;
         }
 
         try {
             await axios.delete(
-                `http://localhost:5000/api/journal/${id}`,
+                `http://localhost:5000/api/reminders/${id}`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -125,7 +135,7 @@ function Journal() {
         } catch (error) {
             setError(
                 error.response?.data?.message ||
-                "Failed to delete journal entry."
+                "Failed to delete reminder."
             );
         }
     };
@@ -144,11 +154,11 @@ function Journal() {
                 </button>
 
                 <h1 className="text-3xl font-bold text-green-700 mb-2">
-                    Plant Journal 📔
+                    Plant Reminders ⏰
                 </h1>
 
                 <p className="text-gray-600 mb-8">
-                    Keep track of your plants' growth and care.
+                    Keep track of watering and other plant care tasks.
                 </p>
 
                 {error && (
@@ -157,13 +167,13 @@ function Journal() {
                     </div>
                 )}
 
-                {/* Add / Edit Form */}
+                {/* Add / Edit Reminder */}
                 <div className="bg-white rounded-2xl shadow p-6 mb-8">
 
                     <h2 className="text-xl font-semibold text-gray-800 mb-4">
                         {editingId
-                            ? "Edit Journal Entry"
-                            : "Add Journal Entry"}
+                            ? "Edit Reminder"
+                            : "Add Reminder"}
                     </h2>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
@@ -190,23 +200,47 @@ function Journal() {
                             </select>
                         )}
 
+                        <select
+                            value={type}
+                            onChange={(e) => setType(e.target.value)}
+                            className="w-full border border-gray-300 rounded-lg px-4 py-3"
+                        >
+                            <option value="watering">
+                                💧 Watering
+                            </option>
+                            <option value="fertilizing">
+                                🌿 Fertilizing
+                            </option>
+                            <option value="repotting">
+                                🪴 Repotting
+                            </option>
+                            <option value="other">
+                                📌 Other
+                            </option>
+                        </select>
+
                         <input
-                            type="text"
-                            placeholder="Journal title"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
+                            type="datetime-local"
+                            value={date}
+                            onChange={(e) => setDate(e.target.value)}
                             required
                             className="w-full border border-gray-300 rounded-lg px-4 py-3"
                         />
 
-                        <textarea
-                            placeholder="Write about your plant..."
-                            value={content}
-                            onChange={(e) => setContent(e.target.value)}
-                            required
-                            rows="5"
-                            className="w-full border border-gray-300 rounded-lg px-4 py-3"
-                        />
+                        {editingId && (
+                            <select
+                                value={status}
+                                onChange={(e) => setStatus(e.target.value)}
+                                className="w-full border border-gray-300 rounded-lg px-4 py-3"
+                            >
+                                <option value="pending">
+                                    Pending
+                                </option>
+                                <option value="completed">
+                                    Completed
+                                </option>
+                            </select>
+                        )}
 
                         <div className="flex gap-3">
 
@@ -214,18 +248,15 @@ function Journal() {
                                 type="submit"
                                 className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700"
                             >
-                                {editingId ? "Update Entry" : "Add Entry"}
+                                {editingId
+                                    ? "Update Reminder"
+                                    : "Add Reminder"}
                             </button>
 
                             {editingId && (
                                 <button
                                     type="button"
-                                    onClick={() => {
-                                        setEditingId(null);
-                                        setPlantId("");
-                                        setTitle("");
-                                        setContent("");
-                                    }}
+                                    onClick={resetForm}
                                     className="bg-gray-200 text-gray-700 px-6 py-3 rounded-lg"
                                 >
                                     Cancel
@@ -237,66 +268,75 @@ function Journal() {
                     </form>
                 </div>
 
-                {/* Journal Entries */}
+                {/* Reminder List */}
                 <div className="space-y-4">
 
-                    {entries.length === 0 ? (
+                    {reminders.length === 0 ? (
                         <div className="bg-white rounded-2xl shadow p-8 text-center">
                             <p className="text-gray-500">
-                                No journal entries yet.
+                                No reminders yet.
                             </p>
                         </div>
                     ) : (
-                        entries.map((entry) => (
+                        reminders.map((reminder) => (
                             <div
-                                key={entry._id}
+                                key={reminder._id}
                                 className="bg-white rounded-2xl shadow p-6"
                             >
-                                <div className="flex justify-between gap-4">
+                                <div className="flex justify-between items-start gap-4">
 
                                     <div>
-                                        <h3 className="text-xl font-semibold text-green-700">
-                                            {entry.title}
+                                        <h3 className="text-xl font-semibold text-green-700 capitalize">
+                                            {reminder.type}
                                         </h3>
 
-                                        <p className="text-sm text-gray-500 mt-1">
+                                        <p className="text-gray-600 mt-1">
                                             Plant:{" "}
-                                            {entry.plantId?.name ||
+                                            {reminder.plantId?.name ||
                                                 "Unknown plant"}
+                                        </p>
+
+                                        <p className="text-gray-500 mt-1">
+                                            📅{" "}
+                                            {new Date(
+                                                reminder.date
+                                            ).toLocaleString()}
                                         </p>
                                     </div>
 
-                                    <div className="flex gap-2">
-                                        <button
-                                            onClick={() =>
-                                                handleEdit(entry)
-                                            }
-                                            className="text-blue-600 hover:underline"
-                                        >
-                                            Edit
-                                        </button>
-
-                                        <button
-                                            onClick={() =>
-                                                handleDelete(entry._id)
-                                            }
-                                            className="text-red-600 hover:underline"
-                                        >
-                                            Delete
-                                        </button>
-                                    </div>
+                                    <span
+                                        className={`px-3 py-1 rounded-full text-sm ${
+                                            reminder.status === "completed"
+                                                ? "bg-green-100 text-green-700"
+                                                : "bg-yellow-100 text-yellow-700"
+                                        }`}
+                                    >
+                                        {reminder.status || "pending"}
+                                    </span>
 
                                 </div>
 
-                                <p className="text-gray-700 mt-4 whitespace-pre-wrap">
-                                    {entry.content}
-                                </p>
+                                <div className="flex gap-4 mt-4">
 
-                                <p className="text-xs text-gray-400 mt-4">
-                                    {new Date(
-                                        entry.createdAt
-                                    ).toLocaleString()}
-                                </p>
+                                    <button
+                                        onClick={() =>
+                                            handleEdit(reminder)
+                                        }
+                                        className="text-blue-600 hover:underline"
+                                    >
+                                        Edit
+                                    </button>
+
+                                    <button
+                                        onClick={() =>
+                                            handleDelete(reminder._id)
+                                        }
+                                        className="text-red-600 hover:underline"
+                                    >
+                                        Delete
+                                    </button>
+
+                                </div>
                             </div>
                         ))
                     )}
@@ -308,4 +348,4 @@ function Journal() {
     );
 }
 
-export default Journal;
+export default Reminders;

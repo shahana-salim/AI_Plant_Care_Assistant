@@ -5,6 +5,8 @@ import Dashboard from "./pages/Dashboard";
 import AddPlant from "./pages/AddPlant";
 import PlantDetails from "./pages/PlantDetails";
 import Journal from "./pages/Journal";
+import Reminders from "./pages/Reminders";
+import DiseaseAnalysis from "./pages/DiseaseAnalysis";
 
 function Home() {
     return (
@@ -29,6 +31,8 @@ function App() {
                 <Route path="/plants/add" element={<AddPlant />} />
                 <Route path="/plants/:id" element={<PlantDetails />} />
                 <Route path="/journal" element={<Journal />} />
+                <Route path="/reminders" element={<Reminders />} />
+                <Route path="/disease" element={<DiseaseAnalysis />} />
             </Routes>
         </BrowserRouter>
     );

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
+import Navbar from "../components/Navbar";
 
 function PlantDetails() {
     const { id } = useParams();
@@ -56,6 +57,7 @@ function PlantDetails() {
 
     return (
         <div className="min-h-screen bg-green-50 px-6 py-10">
+            <Navbar />
 
             <div className="max-w-3xl mx-auto">
 
