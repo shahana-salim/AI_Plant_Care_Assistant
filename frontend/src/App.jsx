@@ -4,6 +4,7 @@ import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import AddPlant from "./pages/AddPlant";
 import PlantDetails from "./pages/PlantDetails";
+import Journal from "./pages/Journal";
 
 function Home() {
     return (
@@ -27,6 +28,7 @@ function App() {
                 <Route path="*" element={<Navigate to="/" />} />
                 <Route path="/plants/add" element={<AddPlant />} />
                 <Route path="/plants/:id" element={<PlantDetails />} />
+                <Route path="/journal" element={<Journal />} />
             </Routes>
         </BrowserRouter>
     );
