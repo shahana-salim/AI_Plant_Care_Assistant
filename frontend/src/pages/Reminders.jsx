@@ -14,6 +14,7 @@ function Reminders() {
     const [editingId, setEditingId] = useState(null);
     const [status, setStatus] = useState("pending");
     const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
 
     const navigate = useNavigate();
     const token = localStorage.getItem("token");
@@ -33,8 +34,8 @@ function Reminders() {
                 })
             ]);
 
-            setReminders(reminderResponse.data.reminders);
-            setPlants(plantResponse.data.plants);
+            setReminders(reminderResponse.data.reminders || []);
+            setPlants(plantResponse.data.plants || []);
         } catch (error) {
             setError(
                 error.response?.data?.message ||
@@ -52,9 +53,18 @@ function Reminders() {
         fetchData();
     }, []);
 
+    const resetForm = () => {
+        setPlantId("");
+        setType("watering");
+        setDate("");
+        setStatus("pending");
+        setEditingId(null);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
+        setLoading(true);
 
         try {
             if (editingId) {
@@ -88,21 +98,15 @@ function Reminders() {
             }
 
             resetForm();
-            fetchData();
+            await fetchData();
         } catch (error) {
             setError(
                 error.response?.data?.message ||
                 "Failed to save reminder."
             );
+        } finally {
+            setLoading(false);
         }
-    };
-
-    const resetForm = () => {
-        setPlantId("");
-        setType("watering");
-        setDate("");
-        setStatus("pending");
-        setEditingId(null);
     };
 
     const handleEdit = (reminder) => {
@@ -110,10 +114,17 @@ function Reminders() {
         setType(reminder.type);
         setDate(
             reminder.date
-                ? new Date(reminder.date).toISOString().slice(0, 16)
+                ? new Date(reminder.date)
+                    .toISOString()
+                    .slice(0, 16)
                 : ""
         );
         setStatus(reminder.status || "pending");
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
     };
 
     const handleDelete = async (id) => {
@@ -141,123 +152,190 @@ function Reminders() {
     };
 
     return (
-        <div className="min-h-screen bg-green-50 px-4 py-8">
+        <div className="min-h-screen bg-green-50">
+
             <Navbar />
 
-            <div className="max-w-6xl mx-auto">
+            <main className="max-w-6xl mx-auto px-6 py-10">
 
                 <button
                     onClick={() => navigate("/dashboard")}
-                    className="text-green-700 font-semibold mb-6 hover:underline"
+                    className="text-green-700 font-semibold hover:underline mb-6"
                 >
                     ← Back to Dashboard
                 </button>
 
-                <h1 className="text-3xl font-bold text-green-700 mb-2">
-                    Plant Reminders ⏰
-                </h1>
+                {/* Header */}
+                <div className="mb-8">
 
-                <p className="text-gray-600 mb-8">
-                    Keep track of watering and other plant care tasks.
-                </p>
+                    <div className="flex items-center gap-4">
+
+                        <div className="w-14 h-14 rounded-2xl bg-yellow-100 flex items-center justify-center text-3xl">
+                            ⏰
+                        </div>
+
+                        <div>
+                            <h1 className="text-3xl font-bold text-gray-800">
+                                Plant Reminders
+                            </h1>
+
+                            <p className="text-gray-500 mt-1">
+                                Stay on top of watering and other plant
+                                care tasks.
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
 
                 {error && (
-                    <div className="bg-red-100 text-red-600 p-3 rounded-lg mb-6">
+                    <div className="bg-red-50 border border-red-200 text-red-600 p-4 rounded-xl mb-6">
                         {error}
                     </div>
                 )}
 
                 {/* Add / Edit Reminder */}
-                <div className="bg-white rounded-2xl shadow p-6 mb-8">
+                <div className="bg-white rounded-3xl shadow-sm border border-green-100 p-8 mb-10">
 
-                    <h2 className="text-xl font-semibold text-gray-800 mb-4">
-                        {editingId
-                            ? "Edit Reminder"
-                            : "Add Reminder"}
-                    </h2>
+                    <div className="mb-6">
 
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <h2 className="text-xl font-bold text-gray-800">
+                            {editingId
+                                ? "Edit Reminder"
+                                : "Create Reminder"}
+                        </h2>
+
+                        <p className="text-sm text-gray-500 mt-1">
+                            Schedule important care tasks for your plants.
+                        </p>
+
+                    </div>
+
+                    <form
+                        onSubmit={handleSubmit}
+                        className="space-y-5"
+                    >
 
                         {!editingId && (
-                            <select
-                                value={plantId}
-                                onChange={(e) => setPlantId(e.target.value)}
-                                required
-                                className="w-full border border-gray-300 rounded-lg px-4 py-3"
-                            >
-                                <option value="">
-                                    Select a plant
-                                </option>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Plant
+                                </label>
 
-                                {plants.map((plant) => (
-                                    <option
-                                        key={plant._id}
-                                        value={plant._id}
-                                    >
-                                        {plant.name}
+                                <select
+                                    value={plantId}
+                                    onChange={(e) =>
+                                        setPlantId(e.target.value)
+                                    }
+                                    required
+                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                                >
+                                    <option value="">
+                                        Select a plant
                                     </option>
-                                ))}
-                            </select>
+
+                                    {plants.map((plant) => (
+                                        <option
+                                            key={plant._id}
+                                            value={plant._id}
+                                        >
+                                            {plant.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
                         )}
 
-                        <select
-                            value={type}
-                            onChange={(e) => setType(e.target.value)}
-                            className="w-full border border-gray-300 rounded-lg px-4 py-3"
-                        >
-                            <option value="watering">
-                                💧 Watering
-                            </option>
-                            <option value="fertilizing">
-                                🌿 Fertilizing
-                            </option>
-                            <option value="repotting">
-                                🪴 Repotting
-                            </option>
-                            <option value="other">
-                                📌 Other
-                            </option>
-                        </select>
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Care Task
+                            </label>
 
-                        <input
-                            type="datetime-local"
-                            value={date}
-                            onChange={(e) => setDate(e.target.value)}
-                            required
-                            className="w-full border border-gray-300 rounded-lg px-4 py-3"
-                        />
+                            <select
+                                value={type}
+                                onChange={(e) =>
+                                    setType(e.target.value)
+                                }
+                                className="w-full border border-gray-200 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                            >
+                                <option value="watering">
+                                    💧 Watering
+                                </option>
+
+                                <option value="fertilizing">
+                                    🌿 Fertilizing
+                                </option>
+
+                                <option value="repotting">
+                                    🪴 Repotting
+                                </option>
+
+                                <option value="other">
+                                    📌 Other
+                                </option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Date & Time
+                            </label>
+
+                            <input
+                                type="datetime-local"
+                                value={date}
+                                onChange={(e) =>
+                                    setDate(e.target.value)
+                                }
+                                required
+                                className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
+                            />
+                        </div>
 
                         {editingId && (
-                            <select
-                                value={status}
-                                onChange={(e) => setStatus(e.target.value)}
-                                className="w-full border border-gray-300 rounded-lg px-4 py-3"
-                            >
-                                <option value="pending">
-                                    Pending
-                                </option>
-                                <option value="completed">
-                                    Completed
-                                </option>
-                            </select>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Status
+                                </label>
+
+                                <select
+                                    value={status}
+                                    onChange={(e) =>
+                                        setStatus(e.target.value)
+                                    }
+                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                                >
+                                    <option value="pending">
+                                        Pending
+                                    </option>
+
+                                    <option value="completed">
+                                        Completed
+                                    </option>
+                                </select>
+                            </div>
                         )}
 
-                        <div className="flex gap-3">
+                        <div className="flex flex-col sm:flex-row gap-3 pt-2">
 
                             <button
                                 type="submit"
-                                className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700"
+                                disabled={loading}
+                                className="bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 disabled:opacity-60 transition"
                             >
-                                {editingId
-                                    ? "Update Reminder"
-                                    : "Add Reminder"}
+                                {loading
+                                    ? "Saving..."
+                                    : editingId
+                                        ? "Update Reminder"
+                                        : "Add Reminder"}
                             </button>
 
                             {editingId && (
                                 <button
                                     type="button"
                                     onClick={resetForm}
-                                    className="bg-gray-200 text-gray-700 px-6 py-3 rounded-lg"
+                                    className="bg-gray-100 text-gray-700 px-6 py-3 rounded-xl font-semibold hover:bg-gray-200 transition"
                                 >
                                     Cancel
                                 </button>
@@ -266,84 +344,149 @@ function Reminders() {
                         </div>
 
                     </form>
+
                 </div>
 
                 {/* Reminder List */}
-                <div className="space-y-4">
+                <section>
 
-                    {reminders.length === 0 ? (
-                        <div className="bg-white rounded-2xl shadow p-8 text-center">
-                            <p className="text-gray-500">
-                                No reminders yet.
+                    <div className="flex items-center justify-between mb-5">
+
+                        <div>
+                            <h2 className="text-2xl font-bold text-gray-800">
+                                Your Reminders
+                            </h2>
+
+                            <p className="text-sm text-gray-500 mt-1">
+                                {reminders.length}{" "}
+                                {reminders.length === 1
+                                    ? "reminder"
+                                    : "reminders"}{" "}
+                                scheduled
                             </p>
                         </div>
+
+                    </div>
+
+                    {reminders.length === 0 ? (
+                        <div className="bg-white rounded-3xl shadow-sm border border-dashed border-green-200 p-12 text-center">
+
+                            <div className="text-5xl mb-4">
+                                ⏰
+                            </div>
+
+                            <h3 className="text-xl font-bold text-gray-800">
+                                No reminders yet
+                            </h3>
+
+                            <p className="text-gray-500 mt-2">
+                                Create a reminder to stay on top of
+                                your plant care.
+                            </p>
+
+                        </div>
                     ) : (
-                        reminders.map((reminder) => (
-                            <div
-                                key={reminder._id}
-                                className="bg-white rounded-2xl shadow p-6"
-                            >
-                                <div className="flex justify-between items-start gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-                                    <div>
-                                        <h3 className="text-xl font-semibold text-green-700 capitalize">
-                                            {reminder.type}
-                                        </h3>
+                            {reminders.map((reminder) => {
 
-                                        <p className="text-gray-600 mt-1">
-                                            Plant:{" "}
-                                            {reminder.plantId?.name ||
-                                                "Unknown plant"}
-                                        </p>
+                                const isCompleted =
+                                    reminder.status === "completed";
 
-                                        <p className="text-gray-500 mt-1">
+                                return (
+                                    <article
+                                        key={reminder._id}
+                                        className="bg-white rounded-2xl shadow-sm border border-green-100 p-6 hover:shadow-md transition"
+                                    >
+
+                                        <div className="flex items-start justify-between gap-4">
+
+                                            <div className="flex items-start gap-4">
+
+                                                <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center text-2xl">
+                                                    {reminder.type ===
+                                                        "watering"
+                                                        ? "💧"
+                                                        : reminder.type ===
+                                                            "fertilizing"
+                                                            ? "🌿"
+                                                            : reminder.type ===
+                                                                "repotting"
+                                                                ? "🪴"
+                                                                : "📌"}
+                                                </div>
+
+                                                <div>
+                                                    <h3 className="text-lg font-bold text-gray-800 capitalize">
+                                                        {reminder.type}
+                                                    </h3>
+
+                                                    <p className="text-sm text-gray-500 mt-1">
+                                                        🌱{" "}
+                                                        {reminder.plantId?.name ||
+                                                            "Unknown plant"}
+                                                    </p>
+                                                </div>
+
+                                            </div>
+
+                                            <span
+                                                className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                                    isCompleted
+                                                        ? "bg-green-100 text-green-700"
+                                                        : "bg-yellow-100 text-yellow-700"
+                                                }`}
+                                            >
+                                                {isCompleted
+                                                    ? "Completed"
+                                                    : "Pending"}
+                                            </span>
+
+                                        </div>
+
+                                        <div className="border-t border-gray-100 my-5"></div>
+
+                                        <p className="text-gray-600 text-sm">
                                             📅{" "}
                                             {new Date(
                                                 reminder.date
                                             ).toLocaleString()}
                                         </p>
-                                    </div>
 
-                                    <span
-                                        className={`px-3 py-1 rounded-full text-sm ${
-                                            reminder.status === "completed"
-                                                ? "bg-green-100 text-green-700"
-                                                : "bg-yellow-100 text-yellow-700"
-                                        }`}
-                                    >
-                                        {reminder.status || "pending"}
-                                    </span>
+                                        <div className="flex gap-4 mt-5 text-sm">
 
-                                </div>
+                                            <button
+                                                onClick={() =>
+                                                    handleEdit(reminder)
+                                                }
+                                                className="text-blue-600 font-medium hover:underline"
+                                            >
+                                                Edit
+                                            </button>
 
-                                <div className="flex gap-4 mt-4">
+                                            <button
+                                                onClick={() =>
+                                                    handleDelete(
+                                                        reminder._id
+                                                    )
+                                                }
+                                                className="text-red-600 font-medium hover:underline"
+                                            >
+                                                Delete
+                                            </button>
 
-                                    <button
-                                        onClick={() =>
-                                            handleEdit(reminder)
-                                        }
-                                        className="text-blue-600 hover:underline"
-                                    >
-                                        Edit
-                                    </button>
+                                        </div>
 
-                                    <button
-                                        onClick={() =>
-                                            handleDelete(reminder._id)
-                                        }
-                                        className="text-red-600 hover:underline"
-                                    >
-                                        Delete
-                                    </button>
+                                    </article>
+                                );
+                            })}
 
-                                </div>
-                            </div>
-                        ))
+                        </div>
                     )}
 
-                </div>
+                </section>
 
-            </div>
+            </main>
         </div>
     );
 }

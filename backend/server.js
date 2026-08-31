@@ -10,6 +10,7 @@ const journalRoutes = require("./routes/journalRoutes");
 const diseaseRoutes = require("./routes/diseaseRoutes");
 const reminderRoutes = require("./routes/reminderRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const aiRoutes = require("./routes/aiRoutes");
 
 const app = express();
 
@@ -28,6 +29,7 @@ app.use("/api/journal", journalRoutes);
 app.use("/api/disease", diseaseRoutes);
 app.use("/api/reminders", reminderRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/ai", aiRoutes);
 
 const connectDB = require("./config/db");
 

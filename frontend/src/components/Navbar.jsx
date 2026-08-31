@@ -49,6 +49,12 @@ function Navbar() {
                     >
                         Disease Analysis
                     </button>
+                    <button
+                        onClick={() => navigate("/ask-ai")}
+                        className="text-gray-600 hover:text-green-600"
+                    >
+                        Ask AI
+                    </button>
 
                     <button
                         onClick={handleLogout}

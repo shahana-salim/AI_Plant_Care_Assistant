@@ -8,6 +8,7 @@ import Journal from "./pages/Journal";
 import Reminders from "./pages/Reminders";
 import DiseaseAnalysis from "./pages/DiseaseAnalysis";
 import Home from "./pages/Home";
+import AskAI from "./pages/AskAI";
 
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
                 <Route path="/journal" element={<Journal />} />
                 <Route path="/reminders" element={<Reminders />} />
                 <Route path="/disease" element={<DiseaseAnalysis />} />
+                <Route path="/ask-ai" element={<AskAI />} />
 
                 <Route path="*" element={<Navigate to="/" />} />
             </Routes>

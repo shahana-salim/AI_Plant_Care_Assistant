@@ -2,10 +2,20 @@ const mongoose = require("mongoose");
 
 const diseaseAnalysisSchema = new mongoose.Schema(
     {
+        userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true
+        },
+
         plantId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Plant",
-            required: true
+            required: false
+        },
+
+        plantName: {
+            type: String
         },
 
         image: {
