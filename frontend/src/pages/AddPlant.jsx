@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import Navbar from "../components/Navbar";
 
 function AddPlant() {
     const [name, setName] = useState("");
@@ -9,13 +10,21 @@ function AddPlant() {
     const [sunlight, setSunlight] = useState("");
     const [fertilizer, setFertilizer] = useState("");
     const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
+
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
+        setLoading(true);
 
         const token = localStorage.getItem("token");
+
+        if (!token) {
+            navigate("/login");
+            return;
+        }
 
         try {
             await axios.post(
@@ -40,94 +49,195 @@ function AddPlant() {
         } catch (error) {
             setError(
                 error.response?.data?.message ||
-                "Failed to add plant."
+                "Failed to add plant. Please try again."
             );
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen bg-green-50 flex items-center justify-center px-4">
+        <div className="min-h-screen bg-green-50">
 
-            <div className="w-full max-w-lg bg-white rounded-2xl shadow-lg p-8">
+            <Navbar />
 
-                <h1 className="text-3xl font-bold text-green-700 mb-2">
-                    Add a Plant 🌱
-                </h1>
+            <main className="max-w-3xl mx-auto px-6 py-10">
 
-                <p className="text-gray-500 mb-6">
-                    Add your plant and its basic care information.
-                </p>
+                <button
+                    onClick={() => navigate("/dashboard")}
+                    className="text-green-700 font-semibold hover:underline mb-6"
+                >
+                    ← Back to Dashboard
+                </button>
 
-                {error && (
-                    <div className="bg-red-100 text-red-600 p-3 rounded-lg mb-4">
-                        {error}
-                    </div>
-                )}
+                <div className="bg-white rounded-3xl shadow-lg border border-green-100 overflow-hidden">
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                    {/* Header */}
+                    <div className="bg-linear-to-r from-green-600 to-emerald-500 p-8 text-white">
 
-                    <input
-                        type="text"
-                        placeholder="Plant name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
-                    />
+                        <div className="flex items-center gap-4">
 
-                    <input
-                        type="text"
-                        placeholder="Species (optional)"
-                        value={species}
-                        onChange={(e) => setSpecies(e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
-                    />
+                            <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center text-4xl">
+                                🌱
+                            </div>
 
-                    <input
-                        type="text"
-                        placeholder="Watering frequency"
-                        value={wateringFrequency}
-                        onChange={(e) => setWateringFrequency(e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
-                    />
+                            <div>
+                                <h1 className="text-3xl font-bold">
+                                    Add a New Plant
+                                </h1>
 
-                    <input
-                        type="text"
-                        placeholder="Sunlight requirements"
-                        value={sunlight}
-                        onChange={(e) => setSunlight(e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
-                    />
+                                <p className="text-green-100 mt-1">
+                                    Add your plant and its care information.
+                                </p>
+                            </div>
 
-                    <input
-                        type="text"
-                        placeholder="Fertilizer information"
-                        value={fertilizer}
-                        onChange={(e) => setFertilizer(e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
-                    />
-
-                    <div className="flex gap-3 pt-2">
-
-                        <button
-                            type="submit"
-                            className="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition"
-                        >
-                            Add Plant
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={() => navigate("/dashboard")}
-                            className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition"
-                        >
-                            Cancel
-                        </button>
+                        </div>
 
                     </div>
 
-                </form>
-            </div>
+                    {/* Form */}
+                    <div className="p-8">
+
+                        {error && (
+                            <div className="bg-red-50 border border-red-200 text-red-600 p-4 rounded-xl mb-6">
+                                {error}
+                            </div>
+                        )}
+
+                        <form
+                            onSubmit={handleSubmit}
+                            className="space-y-6"
+                        >
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Plant Name *
+                                </label>
+
+                                <input
+                                    type="text"
+                                    placeholder="e.g. Money Plant"
+                                    value={name}
+                                    onChange={(e) =>
+                                        setName(e.target.value)
+                                    }
+                                    required
+                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Species
+                                </label>
+
+                                <input
+                                    type="text"
+                                    placeholder="e.g. Epipremnum aureum"
+                                    value={species}
+                                    onChange={(e) =>
+                                        setSpecies(e.target.value)
+                                    }
+                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                />
+                            </div>
+
+                            <div className="border-t border-gray-100 pt-6">
+
+                                <h2 className="text-xl font-bold text-gray-800 mb-1">
+                                    Care Information
+                                </h2>
+
+                                <p className="text-sm text-gray-500 mb-5">
+                                    You can add these details now or leave
+                                    them blank and update them later.
+                                </p>
+
+                                <div className="space-y-5">
+
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            💧 Watering Frequency
+                                        </label>
+
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. Every 7 days"
+                                            value={wateringFrequency}
+                                            onChange={(e) =>
+                                                setWateringFrequency(
+                                                    e.target.value
+                                                )
+                                            }
+                                            className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            ☀️ Sunlight Requirements
+                                        </label>
+
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. Bright indirect light"
+                                            value={sunlight}
+                                            onChange={(e) =>
+                                                setSunlight(e.target.value)
+                                            }
+                                            className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            🌿 Fertilizer Information
+                                        </label>
+
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. Once a month"
+                                            value={fertilizer}
+                                            onChange={(e) =>
+                                                setFertilizer(e.target.value)
+                                            }
+                                            className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                        />
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="flex-1 bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 disabled:opacity-60 transition"
+                                >
+                                    {loading
+                                        ? "Adding Plant..."
+                                        : "Add Plant 🌱"}
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => navigate("/dashboard")}
+                                    className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition"
+                                >
+                                    Cancel
+                                </button>
+
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            </main>
 
         </div>
     );

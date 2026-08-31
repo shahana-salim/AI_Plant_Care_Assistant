@@ -13,6 +13,7 @@ function Journal() {
 
     const [editingId, setEditingId] = useState(null);
     const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
 
     const navigate = useNavigate();
     const token = localStorage.getItem("token");
@@ -32,8 +33,8 @@ function Journal() {
                 })
             ]);
 
-            setEntries(journalResponse.data.entries);
-            setPlants(plantResponse.data.plants);
+            setEntries(journalResponse.data.entries || []);
+            setPlants(plantResponse.data.plants || []);
         } catch (error) {
             setError(
                 error.response?.data?.message ||
@@ -51,9 +52,17 @@ function Journal() {
         fetchData();
     }, []);
 
+    const resetForm = () => {
+        setPlantId("");
+        setTitle("");
+        setContent("");
+        setEditingId(null);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
+        setLoading(true);
 
         try {
             if (editingId) {
@@ -85,17 +94,15 @@ function Journal() {
                 );
             }
 
-            setPlantId("");
-            setTitle("");
-            setContent("");
-            setEditingId(null);
-
-            fetchData();
+            resetForm();
+            await fetchData();
         } catch (error) {
             setError(
                 error.response?.data?.message ||
                 "Failed to save journal entry."
             );
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -104,6 +111,7 @@ function Journal() {
         setTitle(entry.title);
         setContent(entry.content);
         setPlantId(entry.plantId?._id || entry.plantId);
+        window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
     const handleDelete = async (id) => {
@@ -131,179 +139,271 @@ function Journal() {
     };
 
     return (
-        <div className="min-h-screen bg-green-50 px-4 py-8">
+        <div className="min-h-screen bg-green-50">
+
             <Navbar />
 
-            <div className="max-w-6xl mx-auto">
+            <main className="max-w-6xl mx-auto px-6 py-10">
 
                 <button
                     onClick={() => navigate("/dashboard")}
-                    className="text-green-700 font-semibold mb-6 hover:underline"
+                    className="text-green-700 font-semibold hover:underline mb-6"
                 >
                     ← Back to Dashboard
                 </button>
 
-                <h1 className="text-3xl font-bold text-green-700 mb-2">
-                    Plant Journal 📔
-                </h1>
+                {/* Header */}
+                <div className="mb-8">
 
-                <p className="text-gray-600 mb-8">
-                    Keep track of your plants' growth and care.
-                </p>
+                    <div className="flex items-center gap-4">
+
+                        <div className="w-14 h-14 rounded-2xl bg-green-100 flex items-center justify-center text-3xl">
+                            📔
+                        </div>
+
+                        <div>
+                            <h1 className="text-3xl font-bold text-gray-800">
+                                Plant Journal
+                            </h1>
+
+                            <p className="text-gray-500 mt-1">
+                                Record observations, growth and important
+                                updates about your plants.
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
 
                 {error && (
-                    <div className="bg-red-100 text-red-600 p-3 rounded-lg mb-6">
+                    <div className="bg-red-50 border border-red-200 text-red-600 p-4 rounded-xl mb-6">
                         {error}
                     </div>
                 )}
 
                 {/* Add / Edit Form */}
-                <div className="bg-white rounded-2xl shadow p-6 mb-8">
+                <div className="bg-white rounded-3xl shadow-sm border border-green-100 p-8 mb-10">
 
-                    <h2 className="text-xl font-semibold text-gray-800 mb-4">
-                        {editingId
-                            ? "Edit Journal Entry"
-                            : "Add Journal Entry"}
-                    </h2>
+                    <div className="flex items-center justify-between mb-6">
 
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div>
+                            <h2 className="text-xl font-bold text-gray-800">
+                                {editingId
+                                    ? "Edit Journal Entry"
+                                    : "Create Journal Entry"}
+                            </h2>
 
-                        {!editingId && (
-                            <select
-                                value={plantId}
-                                onChange={(e) => setPlantId(e.target.value)}
-                                required
-                                className="w-full border border-gray-300 rounded-lg px-4 py-3"
-                            >
-                                <option value="">
-                                    Select a plant
-                                </option>
-
-                                {plants.map((plant) => (
-                                    <option
-                                        key={plant._id}
-                                        value={plant._id}
-                                    >
-                                        {plant.name}
-                                    </option>
-                                ))}
-                            </select>
-                        )}
-
-                        <input
-                            type="text"
-                            placeholder="Journal title"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            required
-                            className="w-full border border-gray-300 rounded-lg px-4 py-3"
-                        />
-
-                        <textarea
-                            placeholder="Write about your plant..."
-                            value={content}
-                            onChange={(e) => setContent(e.target.value)}
-                            required
-                            rows="5"
-                            className="w-full border border-gray-300 rounded-lg px-4 py-3"
-                        />
-
-                        <div className="flex gap-3">
-
-                            <button
-                                type="submit"
-                                className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700"
-                            >
-                                {editingId ? "Update Entry" : "Add Entry"}
-                            </button>
-
-                            {editingId && (
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setEditingId(null);
-                                        setPlantId("");
-                                        setTitle("");
-                                        setContent("");
-                                    }}
-                                    className="bg-gray-200 text-gray-700 px-6 py-3 rounded-lg"
-                                >
-                                    Cancel
-                                </button>
-                            )}
-
-                        </div>
-
-                    </form>
-                </div>
-
-                {/* Journal Entries */}
-                <div className="space-y-4">
-
-                    {entries.length === 0 ? (
-                        <div className="bg-white rounded-2xl shadow p-8 text-center">
-                            <p className="text-gray-500">
-                                No journal entries yet.
+                            <p className="text-sm text-gray-500 mt-1">
+                                {editingId
+                                    ? "Update your journal entry."
+                                    : "Write down what you observed about your plant."}
                             </p>
                         </div>
-                    ) : (
-                        entries.map((entry) => (
-                            <div
-                                key={entry._id}
-                                className="bg-white rounded-2xl shadow p-6"
+
+                        {editingId && (
+                            <button
+                                type="button"
+                                onClick={resetForm}
+                                className="text-gray-500 hover:text-gray-700"
                             >
-                                <div className="flex justify-between gap-4">
+                                Cancel
+                            </button>
+                        )}
 
-                                    <div>
-                                        <h3 className="text-xl font-semibold text-green-700">
-                                            {entry.title}
-                                        </h3>
+                    </div>
 
-                                        <p className="text-sm text-gray-500 mt-1">
-                                            Plant:{" "}
-                                            {entry.plantId?.name ||
-                                                "Unknown plant"}
-                                        </p>
-                                    </div>
+                    <form
+                        onSubmit={handleSubmit}
+                        className="space-y-5"
+                    >
 
-                                    <div className="flex gap-2">
-                                        <button
-                                            onClick={() =>
-                                                handleEdit(entry)
-                                            }
-                                            className="text-blue-600 hover:underline"
+                        {!editingId && (
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Plant
+                                </label>
+
+                                <select
+                                    value={plantId}
+                                    onChange={(e) =>
+                                        setPlantId(e.target.value)
+                                    }
+                                    required
+                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                                >
+                                    <option value="">
+                                        Select a plant
+                                    </option>
+
+                                    {plants.map((plant) => (
+                                        <option
+                                            key={plant._id}
+                                            value={plant._id}
                                         >
-                                            Edit
-                                        </button>
-
-                                        <button
-                                            onClick={() =>
-                                                handleDelete(entry._id)
-                                            }
-                                            className="text-red-600 hover:underline"
-                                        >
-                                            Delete
-                                        </button>
-                                    </div>
-
-                                </div>
-
-                                <p className="text-gray-700 mt-4 whitespace-pre-wrap">
-                                    {entry.content}
-                                </p>
-
-                                <p className="text-xs text-gray-400 mt-4">
-                                    {new Date(
-                                        entry.createdAt
-                                    ).toLocaleString()}
-                                </p>
+                                            {plant.name}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
-                        ))
-                    )}
+                        )}
+
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Title
+                            </label>
+
+                            <input
+                                type="text"
+                                placeholder="e.g. New leaves appeared"
+                                value={title}
+                                onChange={(e) =>
+                                    setTitle(e.target.value)
+                                }
+                                required
+                                className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Observation
+                            </label>
+
+                            <textarea
+                                placeholder="Write about your plant..."
+                                value={content}
+                                onChange={(e) =>
+                                    setContent(e.target.value)
+                                }
+                                required
+                                rows="5"
+                                className="w-full border border-gray-200 rounded-xl px-4 py-3 resize-none focus:outline-none focus:ring-2 focus:ring-green-500"
+                            />
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 disabled:opacity-60 transition"
+                        >
+                            {loading
+                                ? "Saving..."
+                                : editingId
+                                    ? "Update Entry"
+                                    : "Add Entry"}
+                        </button>
+
+                    </form>
 
                 </div>
 
-            </div>
+                {/* Entries */}
+                <section>
+
+                    <div className="flex items-center justify-between mb-5">
+
+                        <div>
+                            <h2 className="text-2xl font-bold text-gray-800">
+                                Your Entries
+                            </h2>
+
+                            <p className="text-gray-500 text-sm mt-1">
+                                {entries.length}{" "}
+                                {entries.length === 1
+                                    ? "entry"
+                                    : "entries"}{" "}
+                                recorded
+                            </p>
+                        </div>
+
+                    </div>
+
+                    {entries.length === 0 ? (
+                        <div className="bg-white rounded-3xl shadow-sm border border-dashed border-green-200 p-12 text-center">
+
+                            <div className="text-5xl mb-4">
+                                📖
+                            </div>
+
+                            <h3 className="text-xl font-bold text-gray-800">
+                                Your journal is empty
+                            </h3>
+
+                            <p className="text-gray-500 mt-2">
+                                Create your first entry to start tracking
+                                your plant's progress.
+                            </p>
+
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                            {entries.map((entry) => (
+                                <article
+                                    key={entry._id}
+                                    className="bg-white rounded-2xl shadow-sm border border-green-100 p-6 hover:shadow-md transition"
+                                >
+
+                                    <div className="flex items-start justify-between gap-4">
+
+                                        <div>
+                                            <h3 className="text-xl font-bold text-green-700">
+                                                {entry.title}
+                                            </h3>
+
+                                            <p className="text-sm text-gray-500 mt-1">
+                                                🌱{" "}
+                                                {entry.plantId?.name ||
+                                                    "Unknown plant"}
+                                            </p>
+                                        </div>
+
+                                        <div className="flex gap-3 text-sm">
+                                            <button
+                                                onClick={() =>
+                                                    handleEdit(entry)
+                                                }
+                                                className="text-blue-600 hover:underline"
+                                            >
+                                                Edit
+                                            </button>
+
+                                            <button
+                                                onClick={() =>
+                                                    handleDelete(entry._id)
+                                                }
+                                                className="text-red-600 hover:underline"
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+
+                                    </div>
+
+                                    <div className="border-t border-gray-100 my-4"></div>
+
+                                    <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                                        {entry.content}
+                                    </p>
+
+                                    <p className="text-xs text-gray-400 mt-5">
+                                        {entry.createdAt
+                                            ? new Date(
+                                                entry.createdAt
+                                            ).toLocaleString()
+                                            : ""}
+                                    </p>
+
+                                </article>
+                            ))}
+
+                        </div>
+                    )}
+
+                </section>
+
+            </main>
         </div>
     );
 }
