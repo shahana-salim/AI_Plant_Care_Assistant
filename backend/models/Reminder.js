@@ -10,8 +10,13 @@ const reminderSchema = new mongoose.Schema(
 
         type: {
             type: String,
-            enum: ["watering", "fertilizing"],
+            enum: ["watering", "fertilizing", "repotting", "other"],
             required: true
+        },
+
+        description: {
+            type: String,
+            trim: true
         },
 
         date: {

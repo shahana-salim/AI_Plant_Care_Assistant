@@ -10,6 +10,35 @@ function PlantDetails() {
     const [plant, setPlant] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const handleDelete = async () => {
+        const confirmed = window.confirm(
+            `Are you sure you want to delete "${plant.name}"?`
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        const token = localStorage.getItem("token");
+
+        try {
+            await axios.delete(
+                `http://localhost:5000/api/plants/${id}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            navigate("/dashboard");
+        } catch (error) {
+            setError(
+                error.response?.data?.message ||
+                "Failed to delete plant."
+            );
+        }
+    };
 
     useEffect(() => {
         const fetchPlant = async () => {
@@ -98,21 +127,43 @@ function PlantDetails() {
                 {/* Plant Header */}
                 <div className="bg-linear-to-r from-green-600 to-emerald-500 rounded-3xl p-8 text-white shadow-lg mb-6">
 
-                    <div className="flex items-center gap-5">
+                    <div className="flex items-center justify-between gap-5">
 
-                        <div className="w-20 h-20 rounded-2xl bg-white/20 flex items-center justify-center text-5xl">
-                            🌿
+                        <div className="flex items-center gap-5">
+
+                            <div className="w-20 h-20 rounded-2xl bg-white/20 flex items-center justify-center text-5xl">
+                                🌿
+                            </div>
+
+                            <div>
+                                <h1 className="text-3xl md:text-4xl font-bold">
+                                    {plant.name}
+                                </h1>
+
+                                <p className="text-green-100 mt-1">
+                                    {plant.species || "Species not specified"}
+                                </p>
+                            </div>
+
                         </div>
 
-                        <div>
-                            <h1 className="text-3xl md:text-4xl font-bold">
-                                {plant.name}
-                            </h1>
+                        {/* Plant Actions */}
+                        <div className="flex gap-3">
 
-                            <p className="text-green-100 mt-1">
-                                {plant.species ||
-                                    "Species not specified"}
-                            </p>
+                            <button
+                                onClick={() => navigate(`/plants/${id}/edit`)}
+                                className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg font-semibold transition"
+                            >
+                                ✏️ Edit
+                            </button>
+
+                            <button
+                                onClick={handleDelete}
+                                className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg font-semibold transition"
+                            >
+                                🗑️ Delete
+                            </button>
+
                         </div>
 
                     </div>

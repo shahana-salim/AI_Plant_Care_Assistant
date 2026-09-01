@@ -3,14 +3,18 @@ const Plant = require("../models/Plant");
 
 const createReminder = async (req, res) => {
     try {
-        const { plantId, type, date } = req.body;
+        const { plantId, type, description, date } = req.body;
 
         if (!plantId || !type || !date) {
             return res.status(400).json({
                 message: "Plant ID, type and date are required"
             });
         }
-
+        if (type === "other" && !description?.trim()) {
+            return res.status(400).json({
+                message: "Please describe the task"
+            });
+        }
         const plant = await Plant.findOne({
             _id: plantId,
             userId: req.user.id
@@ -25,6 +29,7 @@ const createReminder = async (req, res) => {
         const reminder = await Reminder.create({
             plantId,
             type,
+            description: type === "other" ? description : "",
             date
         });
 
@@ -94,7 +99,7 @@ const getReminderById = async (req, res) => {
 };
 const updateReminder = async (req, res) => {
     try {
-        const { type, date, status } = req.body;
+        const { type, description, date, status } = req.body;
 
         const reminder = await Reminder.findById(req.params.id);
 
@@ -116,6 +121,10 @@ const updateReminder = async (req, res) => {
         }
 
         reminder.type = type || reminder.type;
+        reminder.description =
+            type === "other"
+                ? description?.trim() || ""
+                : "";
         reminder.date = date || reminder.date;
         reminder.status = status || reminder.status;
 
@@ -165,7 +174,7 @@ const deleteReminder = async (req, res) => {
 };
 module.exports = {
     createReminder,
-    getReminders ,
+    getReminders,
     getReminderById,
     updateReminder,
     deleteReminder
