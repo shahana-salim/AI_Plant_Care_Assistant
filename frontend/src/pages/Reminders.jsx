@@ -261,6 +261,16 @@ function Reminders() {
             );
         }
     };
+    const formatReminderDate = (date) => {
+        return new Date(date).toLocaleString("en-GB", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true
+        });
+    };
 
     return (
         <div className="min-h-screen bg-green-50">
@@ -626,10 +636,7 @@ function Reminders() {
                                         <div className="border-t border-gray-100 my-5"></div>
 
                                         <p className="text-gray-600 text-sm">
-                                            📅{" "}
-                                            {new Date(
-                                                reminder.date
-                                            ).toLocaleString()}
+                                           {formatReminderDate(reminder.date)}
                                         </p>
 
                                         <div className="flex gap-4 mt-5 text-sm">

@@ -11,6 +11,7 @@ import Home from "./pages/Home";
 import AskAI from "./pages/AskAI";
 import EditPlant from "./pages/EditPlant";
 import ReminderNotifications from "./components/ReminderNotifications";
+import Profile from "./pages/Profile";
 
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/profile" element={<Profile />} />
     
                 <Route path="/plants/add" element={<AddPlant />} />
                 <Route path="/plants/:id" element={<PlantDetails />} />

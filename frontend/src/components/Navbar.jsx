@@ -28,6 +28,12 @@ function Navbar() {
                     >
                         Dashboard
                     </button>
+                    <button
+                        onClick={() => navigate("/profile")}
+                        className="text-gray-600 hover:text-green-600"
+                    >
+                        Profile
+                    </button>
 
                     <button
                         onClick={() => navigate("/journal")}
