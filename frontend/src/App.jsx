@@ -10,11 +10,14 @@ import DiseaseAnalysis from "./pages/DiseaseAnalysis";
 import Home from "./pages/Home";
 import AskAI from "./pages/AskAI";
 import EditPlant from "./pages/EditPlant";
+import ReminderNotifications from "./components/ReminderNotifications";
 
 
 function App() {
     return (
         <BrowserRouter>
+            <ReminderNotifications />
+
             <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />
