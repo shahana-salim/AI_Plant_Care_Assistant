@@ -53,7 +53,7 @@ function Profile() {
 
         try {
             const response = await axios.put(
-                "http://localhost:5000/api/auth/profile",
+                "/api/auth/profile",
                 {
                     name: name.trim(),
                     email: email.trim()
@@ -84,7 +84,7 @@ function Profile() {
         } catch (error) {
             setProfileError(
                 error.response?.data?.message ||
-                    "Failed to update profile."
+                "Failed to update profile."
             );
         } finally {
             setProfileLoading(false);
@@ -118,7 +118,7 @@ function Profile() {
 
         try {
             const response = await axios.put(
-                "http://localhost:5000/api/auth/change-password",
+                "/api/auth/change-password",
                 {
                     currentPassword,
                     newPassword
@@ -132,7 +132,7 @@ function Profile() {
 
             setPasswordMessage(
                 response.data.message ||
-                    "Password changed successfully."
+                "Password changed successfully."
             );
 
             setCurrentPassword("");
@@ -141,7 +141,7 @@ function Profile() {
         } catch (error) {
             setPasswordError(
                 error.response?.data?.message ||
-                    "Failed to change password."
+                "Failed to change password."
             );
         } finally {
             setPasswordLoading(false);

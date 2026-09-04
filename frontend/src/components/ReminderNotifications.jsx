@@ -18,7 +18,7 @@ function ReminderNotifications() {
         const checkReminders = async () => {
             try {
                 const response = await axios.get(
-                    "http://localhost:5000/api/reminders",
+                    "/api/reminders",
                     {
                         headers: {
                             Authorization: `Bearer ${token}`
@@ -50,10 +50,10 @@ function ReminderNotifications() {
                             reminder.type === "watering"
                                 ? "water"
                                 : reminder.type === "fertilizing"
-                                ? "fertilize"
-                                : reminder.type === "repotting"
-                                ? "repot"
-                                : "complete this task";
+                                    ? "fertilize"
+                                    : reminder.type === "repotting"
+                                        ? "repot"
+                                        : "complete this task";
 
                         const body =
                             reminder.type === "other"

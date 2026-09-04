@@ -28,7 +28,7 @@ function AddPlant() {
 
         try {
             await axios.post(
-                "http://localhost:5000/api/plants",
+                "/api/plants",
                 {
                     name,
                     species,

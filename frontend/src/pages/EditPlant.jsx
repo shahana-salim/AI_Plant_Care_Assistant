@@ -30,7 +30,7 @@ function EditPlant() {
 
             try {
                 const response = await axios.get(
-                    `http://localhost:5000/api/plants/${id}`,
+                    `/api/plants/${id}`,
                     {
                         headers: {
                             Authorization: `Bearer ${token}`
@@ -85,7 +85,7 @@ function EditPlant() {
 
         try {
             await axios.put(
-                `http://localhost:5000/api/plants/${id}`,
+                `/api/plants/${id}`,
                 {
                     name: formData.name.trim(),
                     species: formData.species.trim(),

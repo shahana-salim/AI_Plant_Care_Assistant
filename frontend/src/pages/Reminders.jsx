@@ -20,17 +20,17 @@ function Reminders() {
     const navigate = useNavigate();
     const token = localStorage.getItem("token");
 
-    
+
     const fetchData = async () => {
         try {
             const [reminderResponse, plantResponse] = await Promise.all([
-                axios.get("http://localhost:5000/api/reminders", {
+                axios.get("/api/reminders", {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
                 }),
 
-                axios.get("http://localhost:5000/api/plants", {
+                axios.get("/api/plants", {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -84,7 +84,7 @@ function Reminders() {
         try {
             if (editingId) {
                 await axios.put(
-                    `http://localhost:5000/api/reminders/${editingId}`,
+                    `/api/reminders/${editingId}`,
                     {
                         type,
                         description,
@@ -99,7 +99,7 @@ function Reminders() {
                 );
             } else {
                 await axios.post(
-                    "http://localhost:5000/api/reminders",
+                    "/api/reminders",
                     {
                         plantId,
                         type,
@@ -155,7 +155,7 @@ function Reminders() {
 
         try {
             await axios.delete(
-                `http://localhost:5000/api/reminders/${id}`,
+                `/api/reminders/${id}`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -175,7 +175,7 @@ function Reminders() {
     const handleComplete = async (id) => {
         try {
             await axios.put(
-                `http://localhost:5000/api/reminders/${id}`,
+                `/api/reminders/${id}`,
                 {
                     status: "completed"
                 },
@@ -238,7 +238,7 @@ function Reminders() {
                                 Stay on top of watering and other plant
                                 care tasks.
                             </p>
-                            
+
 
                         </div>
 

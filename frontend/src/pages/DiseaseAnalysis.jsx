@@ -22,12 +22,12 @@ function DiseaseAnalysis() {
     const fetchData = async () => {
         try {
             const [plantsResponse, analysesResponse] = await Promise.all([
-                axios.get("http://localhost:5000/api/plants", {
+                axios.get("/api/plants", {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
                 }),
-                axios.get("http://localhost:5000/api/disease", {
+                axios.get("/api/disease", {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -123,7 +123,7 @@ function DiseaseAnalysis() {
 
         try {
             const response = await axios.post(
-                "http://localhost:5000/api/disease/analyze",
+                "/api/disease/analyze",
                 formData,
                 {
                     headers: {
@@ -162,7 +162,7 @@ function DiseaseAnalysis() {
 
             // First create the plant
             const response = await axios.post(
-                "http://localhost:5000/api/plants",
+                "/api/plants",
                 {
                     name: result.plantName || "My New Plant",
                     species: result.plantSpecies || ""
@@ -179,7 +179,7 @@ function DiseaseAnalysis() {
             // Then link the existing disease analysis
             // to the newly created plant.
             await axios.patch(
-                `http://localhost:5000/api/disease/${result._id}/link`,
+                `/api/disease/${result._id}/link`,
                 {
                     plantId: newPlant._id
                 },
@@ -444,7 +444,7 @@ function DiseaseAnalysis() {
 
                         <div className="bg-white rounded-3xl shadow-lg border border-green-100 overflow-hidden">
 
-                            <div className="bg-gradient-to-r from-green-600 to-emerald-500 p-6 text-white">
+                            <div className="bg-linear-to-r from-green-600 to-emerald-500 p-6 text-white">
 
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 
@@ -620,11 +620,15 @@ function DiseaseAnalysis() {
                                     </p>
 
                                     <p className="text-xs text-gray-400 mt-4">
-                                        Analyzed on{" "}
                                         {analysis.createdAt
-                                            ? new Date(
-                                                analysis.createdAt
-                                            ).toLocaleString()
+                                            ? new Date(analysis.createdAt).toLocaleString("en-GB", {
+                                                day: "2-digit",
+                                                month: "2-digit",
+                                                year: "numeric",
+                                                hour: "numeric",
+                                                minute: "2-digit",
+                                                hour12: true
+                                            })
                                             : "Unknown date"}
                                     </p>
 

@@ -24,7 +24,7 @@ function Dashboard() {
         const fetchPlants = async () => {
             try {
                 const response = await axios.get(
-                    "http://localhost:5000/api/plants",
+                    "/api/plants",
                     {
                         headers: {
                             Authorization: `Bearer ${token}`

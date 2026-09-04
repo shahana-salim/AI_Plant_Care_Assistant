@@ -21,12 +21,12 @@ function Journal() {
     const fetchData = async () => {
         try {
             const [journalResponse, plantResponse] = await Promise.all([
-                axios.get("http://localhost:5000/api/journal", {
+                axios.get("/api/journal", {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
                 }),
-                axios.get("http://localhost:5000/api/plants", {
+                axios.get("/api/plants", {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -67,7 +67,7 @@ function Journal() {
         try {
             if (editingId) {
                 await axios.put(
-                    `http://localhost:5000/api/journal/${editingId}`,
+                    `/api/journal/${editingId}`,
                     {
                         title,
                         content
@@ -80,7 +80,7 @@ function Journal() {
                 );
             } else {
                 await axios.post(
-                    "http://localhost:5000/api/journal",
+                    "/api/journal",
                     {
                         plantId,
                         title,
@@ -121,7 +121,7 @@ function Journal() {
 
         try {
             await axios.delete(
-                `http://localhost:5000/api/journal/${id}`,
+                `/api/journal/${id}`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -388,11 +388,14 @@ function Journal() {
                                     </p>
 
                                     <p className="text-xs text-gray-400 mt-5">
-                                        {entry.createdAt
-                                            ? new Date(
-                                                entry.createdAt
-                                            ).toLocaleString()
-                                            : ""}
+                                        {new Date(entry.createdAt).toLocaleString("en-GB", {
+                                            day: "2-digit",
+                                            month: "2-digit",
+                                            year: "numeric",
+                                            hour: "numeric",
+                                            minute: "2-digit",
+                                            hour12: true
+                                        })}
                                     </p>
 
                                 </article>

@@ -24,7 +24,7 @@ function AskAI() {
         const fetchPlants = async () => {
             try {
                 const response = await axios.get(
-                    "http://localhost:5000/api/plants",
+                    "/api/plants",
                     {
                         headers: {
                             Authorization: `Bearer ${token}`
@@ -59,7 +59,7 @@ function AskAI() {
 
         try {
             const response = await axios.post(
-                "http://localhost:5000/api/ai/ask",
+                "/api/ai/ask",
                 {
                     question: question.trim(),
                     plantId: plantId || undefined
