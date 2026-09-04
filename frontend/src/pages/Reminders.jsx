@@ -20,96 +20,7 @@ function Reminders() {
     const navigate = useNavigate();
     const token = localStorage.getItem("token");
 
-    const enableNotifications = async () => {
-        if (!("Notification" in window)) {
-            setError("Your browser does not support notifications.");
-            return;
-        }
-
-        const permission = await Notification.requestPermission();
-
-        if (permission === "granted") {
-            setError("");
-            new Notification("Plant Care Assistant", {
-                body: "Notifications are enabled successfully! 🌱"
-            });
-        } else if (permission === "denied") {
-            setError(
-                "Notifications are blocked. Please allow notifications in your browser settings."
-            );
-        }
-    };
-    useEffect(() => {
-        if (!("Notification" in window)) {
-            return;
-        }
-
-        const checkReminders = () => {
-            if (Notification.permission !== "granted") {
-                return;
-            }
-
-            const now = new Date();
-
-            const notifiedReminders = JSON.parse(
-                localStorage.getItem("notifiedReminders") || "[]"
-            );
-
-            reminders.forEach((reminder) => {
-                if (
-                    reminder.status !== "pending" ||
-                    !reminder.date ||
-                    notifiedReminders.includes(reminder._id)
-                ) {
-                    return;
-                }
-
-                const reminderTime = new Date(reminder.date);
-
-                if (reminderTime <= now) {
-                    const plantName =
-                        reminder.plantId?.name || "your plant";
-
-                    let taskName;
-
-                    if (reminder.type === "other") {
-                        taskName =
-                            reminder.description || "plant care task";
-                    } else if (reminder.type === "watering") {
-                        taskName = "water";
-                    } else if (reminder.type === "fertilizing") {
-                        taskName = "fertilize";
-                    } else if (reminder.type === "repotting") {
-                        taskName = "repot";
-                    } else {
-                        taskName = "complete your plant care task";
-                    }
-
-                    new Notification("🌱 Plant Care Reminder", {
-                        body: `Time to ${taskName} your ${plantName}.`,
-                        icon: "/favicon.ico"
-                    });
-
-                    notifiedReminders.push(reminder._id);
-
-                    localStorage.setItem(
-                        "notifiedReminders",
-                        JSON.stringify(notifiedReminders)
-                    );
-                }
-            });
-        };
-
-        checkReminders();
-
-        const interval = setInterval(
-            checkReminders,
-            15000
-        );
-
-        return () => clearInterval(interval);
-    }, [reminders]);
-
+    
     const fetchData = async () => {
         try {
             const [reminderResponse, plantResponse] = await Promise.all([
@@ -261,6 +172,28 @@ function Reminders() {
             );
         }
     };
+    const handleComplete = async (id) => {
+        try {
+            await axios.put(
+                `http://localhost:5000/api/reminders/${id}`,
+                {
+                    status: "completed"
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            await fetchData();
+        } catch (error) {
+            setError(
+                error.response?.data?.message ||
+                "Failed to complete reminder."
+            );
+        }
+    };
     const formatReminderDate = (date) => {
         return new Date(date).toLocaleString("en-GB", {
             day: "2-digit",
@@ -305,14 +238,7 @@ function Reminders() {
                                 Stay on top of watering and other plant
                                 care tasks.
                             </p>
-                            {("Notification" in window) && Notification.permission !== "granted" && (
-                                <button
-                                    onClick={enableNotifications}
-                                    className="mt-4 bg-green-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-green-700 transition"
-                                >
-                                    🔔 Enable Notifications
-                                </button>
-                            )}
+                            
 
                         </div>
 
@@ -636,26 +562,29 @@ function Reminders() {
                                         <div className="border-t border-gray-100 my-5"></div>
 
                                         <p className="text-gray-600 text-sm">
-                                           {formatReminderDate(reminder.date)}
+                                            {formatReminderDate(reminder.date)}
                                         </p>
 
                                         <div className="flex gap-4 mt-5 text-sm">
 
+                                            {!isCompleted && (
+                                                <button
+                                                    onClick={() => handleComplete(reminder._id)}
+                                                    className="text-green-600 font-semibold hover:underline"
+                                                >
+                                                    ✓ Complete
+                                                </button>
+                                            )}
+
                                             <button
-                                                onClick={() =>
-                                                    handleEdit(reminder)
-                                                }
+                                                onClick={() => handleEdit(reminder)}
                                                 className="text-blue-600 font-medium hover:underline"
                                             >
                                                 Edit
                                             </button>
 
                                             <button
-                                                onClick={() =>
-                                                    handleDelete(
-                                                        reminder._id
-                                                    )
-                                                }
+                                                onClick={() => handleDelete(reminder._id)}
                                                 className="text-red-600 font-medium hover:underline"
                                             >
                                                 Delete
