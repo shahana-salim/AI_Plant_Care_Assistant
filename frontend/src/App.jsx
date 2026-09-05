@@ -12,6 +12,7 @@ import AskAI from "./pages/AskAI";
 import EditPlant from "./pages/EditPlant";
 import ReminderNotifications from "./components/ReminderNotifications";
 import Profile from "./pages/Profile";
+import Admin from "./pages/Admin";
 
 
 function App() {
@@ -35,6 +36,8 @@ function App() {
                 <Route path="/plants/:id/edit" element={<EditPlant />} />
 
                 <Route path="*" element={<Navigate to="/" />} />
+
+                <Route path="/admin" element={<Admin />} />
             </Routes>
         </BrowserRouter>
     );

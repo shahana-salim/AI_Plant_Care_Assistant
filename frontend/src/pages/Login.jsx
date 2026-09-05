@@ -30,7 +30,11 @@ function Login() {
                 JSON.stringify(response.data.user)
             );
 
-            navigate("/dashboard");
+            if (response.data.user.role === "admin") {
+                navigate("/admin");
+            } else {
+                navigate("/dashboard");
+            }
         } catch (error) {
             setError(
                 error.response?.data?.message ||
