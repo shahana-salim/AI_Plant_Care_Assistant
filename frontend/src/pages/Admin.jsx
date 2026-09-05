@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 function Admin() {
@@ -8,6 +8,7 @@ function Admin() {
     const [plants, setPlants] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const navigate = useNavigate();
 
     const token = localStorage.getItem("token");
 
@@ -56,20 +57,35 @@ function Admin() {
             setLoading(false);
         }
     };
+    const handleLogout = () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        localStorage.removeItem("notifiedReminders");
+
+        navigate("/login");
+    };
 
     return (
         <div className="min-h-screen bg-green-50 p-6">
             <div className="max-w-6xl mx-auto">
 
-                {/* Header */}
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-green-700">
-                        Admin Dashboard
-                    </h1>
+                <div className="flex items-center justify-between mb-8">
+                    <div>
+                        <h1 className="text-3xl font-bold text-green-700">
+                            Admin Dashboard
+                        </h1>
 
-                    <p className="text-gray-600 mt-2">
-                        Manage and view application data.
-                    </p>
+                        <p className="text-gray-600 mt-2">
+                            Manage and view application data.
+                        </p>
+                    </div>
+
+                    <button
+                        onClick={handleLogout}
+                        className="bg-red-500 text-white px-5 py-2 rounded-xl font-semibold hover:bg-red-600 transition"
+                    >
+                        Logout
+                    </button>
                 </div>
 
                 {/* Options */}
